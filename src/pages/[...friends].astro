@@ -1,0 +1,99 @@
+---
+import { getCollection, render } from 'astro:content'
+import { defaultLocale, moreLocales } from '@/config'
+import Comment from '@/components/Comment/Index.astro'
+import Layout from '@/layouts/Layout.astro'
+
+export async function getStaticPaths() {
+  type PathItem = {
+    params: { friends: string }
+    props: { lang: string }
+  }
+
+  const paths: PathItem[] = []
+
+  // Default locale
+  paths.push({
+    params: { friends: 'friends/' },
+    props: { lang: defaultLocale },
+  })
+
+  // More locales
+  moreLocales.forEach((lang: string) => {
+    paths.push({
+      params: { friends: `${lang}/friends/` },
+      props: { lang },
+    })
+  })
+
+  return paths
+}
+
+const { lang } = Astro.props
+
+// Get about page content with different language
+const allFriendsEntries = await getCollection('friends')
+const friendsEntry = allFriendsEntries.find(entry => entry.data.lang === lang)
+  ?? allFriendsEntries.find(entry => entry.data.lang === '')
+const { Content } = friendsEntry ? await render(friendsEntry) : { Content: null }
+
+const friendItems = [
+	{
+		title: "Suwa Shrine",
+		imgurl: "https://sukunahust.moe/avatar/IMG_1335.PNG",
+		desc: "灵山之上神风起",
+		siteurl: "https://sukunahust.moe",
+		tags: [""],
+	},
+	{
+		title: "喵二の小博客",
+		imgurl: "https://static.miaoer.net/logo/avatar.webp",
+		desc: "缘，妙不可言",
+		siteurl: "https://www.miaoer.net",
+		tags: [""],
+	},
+	{
+		title: "AkiDAY",
+		imgurl: "https://blog.akiday.com/imgapi/profile.webp",
+		desc: "永恒秋日之星",
+		siteurl: "https://blog.akiday.com",
+		tags: [""],
+	},
+	{
+		title: "Imken",
+		imgurl: "https://github.com/immccn123.png",
+		desc: "Forever 3 y.o.",
+		siteurl: "https://imken.moe",
+		tags: [""],
+	},
+]
+---
+
+<Layout>
+  <!-- Decorative Line -->
+  <div class="uno-decorative-line" />
+  <!-- Friends Page Content -->
+  <div class="heti">
+    {Content && <Content />}
+    <!-- Friends -->
+    <div class="links" style="translate: none; rotate: none; scale: none; transform: translate(0px); opacity: 1;">
+    {friendItems.map((item) => (   
+        <div class="link-card">
+            <a href={item.siteurl} target="_blank">
+                <div class="link-card-inner">
+                    <div class="link-avatar highlight-hover py-0.8 transition-colors after:bottom-0.35em hover:c-primary">
+                        <img src={item.imgurl} alt={item.title}/>
+                    </div>
+                    <div class="link-text">
+                        <div class="link-title">{item.title}</div>
+                        <div class="link-intro">{item.desc}</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    ))}
+    </div>
+    <!-- Comments -->
+    <Comment />
+  </div>
+</Layout>
